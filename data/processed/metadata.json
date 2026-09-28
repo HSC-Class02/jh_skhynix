@@ -1,0 +1,9 @@
+{
+  "company": "SK hynix Inc.",
+  "corp_code": "00164779",
+  "start_year_requested": 2010,
+  "api_financial_start_year": 2015,
+  "end_year": 2026,
+  "updated_at_utc": null,
+  "note": "OpenDART fnlttSinglAcntAll documents financial API coverage from 2015 onward. 2010-2014 requires a legacy filing-table backfill outside this endpoint."
+}

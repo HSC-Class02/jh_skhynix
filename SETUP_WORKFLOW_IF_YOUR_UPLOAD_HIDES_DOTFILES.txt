@@ -1,0 +1,5 @@
+GitHub Actions workflow is intentionally stored at:
+.github/workflows/update_and_deploy.yml
+
+If your upload tool hides dot-folders, copy the workflow file manually to that exact GitHub path after uploading the rest of the project.
+The functional GitHub-ready ZIP includes .github because GitHub Actions requires that exact directory.

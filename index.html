@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SK hynix · DART Financial Dashboard</title>
+  <meta name="description" content="SK hynix DART financial statements and ratio dashboard">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span> SK hynix Financial Intelligence</div>
+    <nav><a href="#overview">Overview</a><a href="#tables">Financial Data</a><a href="#peers">Peer Firms</a><a href="https://github.com/HSC-Class02/jh_skhynix" target="_blank" rel="noreferrer">GitHub ↗</a></nav>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div>
+        <p class="eyebrow">DART · OPEN DATA · AUTOMATED</p>
+        <h1>SK hynix<br><span>Financial Dashboard</span></h1>
+        <p class="lede">사업·반기·분기보고서의 주요 재무수치를 자동 수집하고, 성장성·수익성·현금창출력·재무안정성 지표로 연결합니다.</p>
+        <div class="hero-actions"><a class="button" href="#tables">재무 데이터 보기</a><a class="button ghost" href="https://dart.fss.or.kr" target="_blank" rel="noreferrer">DART 원문 ↗</a></div>
+      </div>
+      <div class="hero-card">
+        <div class="mini-label">LAST AUTOMATED UPDATE</div>
+        <div id="updatedAt" class="updated">—</div>
+        <div class="status"><span class="status-dot"></span><span id="dataStatus">데이터 확인 중</span></div>
+        <div class="stat-grid">
+          <div><small>API coverage</small><strong>2015–</strong></div>
+          <div><small>Requested archive</small><strong>2010–</strong></div>
+          <div><small>Reports</small><strong>Annual · H1 · Q1 · Q3</strong></div>
+          <div><small>Refresh</small><strong>매월 1일</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <article class="metric-card"><span>Revenue growth</span><strong id="kpiGrowth">—</strong><small>매출증가율</small></article>
+      <article class="metric-card"><span>Operating margin</span><strong id="kpiOp">—</strong><small>영업이익률</small></article>
+      <article class="metric-card"><span>ROE</span><strong id="kpiRoe">—</strong><small>자기자본이익률</small></article>
+      <article class="metric-card"><span>Net debt / EBITDA</span><strong id="kpiLeverage">—</strong><small>순차입금 / EBITDA</small></article>
+    </section>
+
+    <section class="chart-grid">
+      <article class="panel wide"><div class="panel-head"><div><p class="eyebrow">TREND</p><h2>매출 & 영업이익</h2></div><span class="tag">Annual</span></div><canvas id="revenueChart"></canvas></article>
+      <article class="panel"><div class="panel-head"><div><p class="eyebrow">PROFITABILITY</p><h2>주요 수익성</h2></div></div><canvas id="marginChart"></canvas></article>
+      <article class="panel"><div class="panel-head"><div><p class="eyebrow">CASH FLOW</p><h2>CFO · FCF</h2></div></div><canvas id="cashChart"></canvas></article>
+    </section>
+
+    <section class="section" id="tables">
+      <div class="section-title"><div><p class="eyebrow">SOURCE DATA</p><h2>Financial Data Tables</h2></div><p>단위는 DART 원문 통화/단위를 기준으로 저장됩니다.</p></div>
+      <div class="table-block"><div class="table-title"><h3>Annual</h3><span>사업보고서</span></div><div class="table-wrap"><table id="annualTable"></table></div></div>
+      <div class="table-block"><div class="table-title"><h3>Half-year</h3><span>반기보고서</span></div><div class="table-wrap"><table id="halfTable"></table></div></div>
+      <div class="table-block"><div class="table-title"><h3>Quarterly</h3><span>Q1 · Q2 · Q3 · Q4</span></div><div class="table-wrap"><table id="quarterTable"></table></div></div>
+    </section>
+
+    <section class="section" id="peers">
+      <div class="section-title"><div><p class="eyebrow">DOMESTIC COMPARABLES</p><h2>Peer Firms</h2></div><p>동일 업종·공급망에서 비교 목적에 따라 분류한 국내 상장사입니다.</p></div>
+      <div class="table-wrap"><table id="peerTable"></table></div>
+    </section>
+
+    <footer>
+      <div><strong>SK hynix Financial Intelligence</strong><p>OpenDART 기반 자동화 분석 · GitHub Pages</p></div>
+      <div class="footer-links"><a href="https://opendart.fss.or.kr" target="_blank" rel="noreferrer">OpenDART</a><a href="https://github.com/HSC-Class02/jh_skhynix" target="_blank" rel="noreferrer">Repository</a></div>
+    </footer>
+  </main>
+  <script src="assets/app.js"></script>
+</body>
+</html>
