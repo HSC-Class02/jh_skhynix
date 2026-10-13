@@ -1,0 +1,16 @@
+{
+  "corp_code": "00164779",
+  "corp_name": "SK hynix",
+  "start_year": 2010,
+  "report_codes": {"annual": "11011", "half_year": "11012", "q1": "11013", "q3": "11014"},
+  "download_raw_reports": true,
+  "raw_report_max_mb": 20,
+  "currency": "KRW",
+  "unit": "원",
+  "peer_firms": [
+    {"name": "삼성전자", "ticker": "005930", "relationship": "메모리 반도체 직접 경쟁사(종합 전자기업)"},
+    {"name": "한미반도체", "ticker": "042700", "relationship": "반도체 후공정 장비 인접 peer"},
+    {"name": "DB하이텍", "ticker": "000990", "relationship": "파운드리 인접 peer"},
+    {"name": "HPSP", "ticker": "403870", "relationship": "반도체 공정 장비 인접 peer"}
+  ]
+}

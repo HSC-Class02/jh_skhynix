@@ -1,0 +1,16 @@
+{
+  "company": "SK hynix",
+  "corp_code": "00164779",
+  "updated_at": null,
+  "data_note": "아직 OpenDART API 키로 데이터를 수집하지 않았습니다. GitHub Actions에 DART_API_KEY secret을 등록하고 워크플로우를 실행하세요. OpenDART 구조화 재무제표 API는 2015년 이후 자료 중심으로 제공되며, 2010~2014년은 공시 목록 인덱스로 보존합니다.",
+  "filings": [],
+  "periods": [],
+  "peer_firms": [
+    {"name":"삼성전자","ticker":"005930","relationship":"메모리 반도체 직접 경쟁사(종합 전자기업)"},
+    {"name":"한미반도체","ticker":"042700","relationship":"반도체 후공정 장비 인접 peer"},
+    {"name":"DB하이텍","ticker":"000990","relationship":"파운드리 인접 peer"},
+    {"name":"HPSP","ticker":"403870","relationship":"반도체 공정 장비 인접 peer"}
+  ],
+  "source": "OpenDART API",
+  "start_year": 2010
+}
