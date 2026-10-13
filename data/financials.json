@@ -1,0 +1,39 @@
+{
+  "company": "SK hynix",
+  "stock_code": "000660",
+  "accounting_basis": "CFS",
+  "periods": [],
+  "peers": [
+    {
+      "name": "삼성전자",
+      "ticker": "005930",
+      "reason": "메모리 반도체·종합 전자"
+    },
+    {
+      "name": "한미반도체",
+      "ticker": "042700",
+      "reason": "반도체 후공정 장비"
+    },
+    {
+      "name": "리노공업",
+      "ticker": "058470",
+      "reason": "반도체 테스트 부품·소켓"
+    },
+    {
+      "name": "원익IPS",
+      "ticker": "240810",
+      "reason": "반도체 제조 장비"
+    },
+    {
+      "name": "DB하이텍",
+      "ticker": "000990",
+      "reason": "파운드리·반도체 제조"
+    },
+    {
+      "name": "이오테크닉스",
+      "ticker": "039030",
+      "reason": "반도체 레이저 장비"
+    }
+  ],
+  "generated_at": null
+}
