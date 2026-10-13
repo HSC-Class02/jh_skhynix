@@ -1,0 +1,1 @@
+The collector writes `financials.csv` here after a successful API run. No fabricated sample values are included in this package.
