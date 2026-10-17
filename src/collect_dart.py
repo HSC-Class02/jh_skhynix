@@ -163,14 +163,23 @@ def collect(start_year, end_year, api_key):
             if pd.notna(old) and old != 0 and pd.notna(new):
                 df.loc[idx, "revenue_growth_pct"] = (new / old - 1) * 100
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    # Merge prior data so temporarily unavailable older filings are not deleted.
+    # Merge prior normalized data so temporarily unavailable older filings are not deleted.
+    # Older template CSVs may use raw OpenDART columns and are not compatible with this schema.
     if OUT.exists():
-        old = pd.read_csv(OUT)
-        df = pd.concat([old, df], ignore_index=True)
-        df = df.drop_duplicates(["fiscal_year", "period"], keep="last")
-        df = df.sort_values(["fiscal_year", "period"])
+        try:
+            old = pd.read_csv(OUT)
+            required_keys = {"fiscal_year", "period"}
+            if required_keys.issubset(old.columns) and not old.empty:
+                df = pd.concat([old, df], ignore_index=True, sort=False)
+                df = df.drop_duplicates(["fiscal_year", "period"], keep="last")
+                df = df.sort_values(["fiscal_year", "period"])
+            else:
+                print("INFO: existing CSV uses a legacy/empty schema; replacing it with normalized records.")
+        except Exception as exc:
+            print(f"WARN: could not merge existing CSV ({exc}); replacing it with fresh normalized records.")
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, index=False, encoding="utf-8-sig")
-    print(f"Wrote {len(df)} rows to {OUT}")
+    print(f"Wrote {len(df)} normalized rows to {OUT}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
