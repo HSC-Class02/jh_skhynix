@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: sk-hynix-dashboard
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update-and-deploy:
