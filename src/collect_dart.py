@@ -5,6 +5,7 @@ import io
 import os
 import sys
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -15,7 +16,7 @@ CORP_CODE = "00164779"  # SK hynix
 REPORTS = [("annual", "11011"), ("half_year", "11012"),
            ("quarterly_q1", "11013"), ("quarterly_q3", "11014")]
 OUT = Path("data/financials.csv")
-TIMEOUT = (10, 25)  # connect timeout, read timeout
+TIMEOUT = (5, 12)  # connect timeout, read timeout
 
 # DART account names can vary by filing; first matching account name is used.
 ACCOUNT_ALIASES = {
@@ -108,52 +109,71 @@ def ratio(n, d, scale=1.0):
 
 def collect(start_year, end_year, api_key):
     records = []
-    for year in range(start_year, end_year + 1):
-        for period, code in REPORTS:
+    tasks = [(year, period, code) for year in range(start_year, end_year + 1)
+             for period, code in REPORTS]
+    rows_by_task = {}
+
+    # Historical backfills require many independent calls. Use a small bounded pool
+    # so a slow filing does not serialize the entire 2010-to-present collection.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        future_map = {
+            pool.submit(fetch_statement, year, report_code, api_key): (year, period, report_code)
+            for year, period, report_code in tasks
+        }
+        for future in as_completed(future_map):
+            year, period, report_code = future_map[future]
             try:
-                rows = fetch_statement(year, code, api_key)
-                if not rows:
-                    print(f"INFO: no statement rows for {year} {period}")
-                    continue
-                v = extract_values(rows)
-                record = {"company": "SK hynix", "corp_code": CORP_CODE,
-                          "fiscal_year": year, "period": period,
-                          "report_code": code, "statement_scope": "CFS"}
-                record.update(v)
-                record["gross_profit"] = record.get("gross_profit")
-                if record["gross_profit"] is None and record.get("revenue") is not None and record.get("cost_of_sales") is not None:
-                    record["gross_profit"] = record["revenue"] - record["cost_of_sales"]
-                record["revenue_growth_pct"] = None
-                record["gross_margin_pct"] = ratio(record.get("gross_profit"), record.get("revenue"), 100)
-                record["operating_margin_pct"] = ratio(record.get("operating_profit"), record.get("revenue"), 100)
-                record["net_margin_pct"] = ratio(record.get("net_income"), record.get("revenue"), 100)
-                record["current_ratio_pct"] = ratio(record.get("current_assets"), record.get("current_liabilities"), 100)
-                record["debt_to_equity_pct"] = ratio(record.get("total_liabilities"), record.get("total_equity"), 100)
-                record["equity_ratio_pct"] = ratio(record.get("total_equity"), record.get("total_assets"), 100)
-                record["debt_to_assets_pct"] = ratio(record.get("total_liabilities"), record.get("total_assets"), 100)
-                record["interest_coverage"] = ratio(record.get("operating_profit"), record.get("interest_expense"))
-                record["total_asset_turnover"] = ratio(record.get("revenue"), record.get("total_assets"))
-                record["cfo_to_net_income"] = ratio(record.get("operating_cash_flow"), record.get("net_income"))
-                record["fcf_proxy"] = None
-                # CAPEX is not consistently standardized in this endpoint; investing cash flow is not equivalent to CAPEX.
-                record["roa_pct"] = None
-                record["roe_pct"] = None
-                record["ebitda_margin_pct"] = None
-                record["net_debt_to_ebitda"] = None
-                record["dso_days"] = None
-                record["dio_days"] = None
-                record["dpo_days"] = None
-                record["ccc_days"] = None
-                record["source"] = "OpenDART fnlttSinglAcntAll.json"
-                records.append(record)
-                print(f"OK: {year} {period}")
+                rows_by_task[(year, period, report_code)] = future.result()
             except Exception as exc:
-                print(f"WARN: {year} {period}: {exc}", file=sys.stderr)
+                rows_by_task[(year, period, report_code)] = []
+                print(f"WARN: {year} {period}: {exc}", file=sys.stderr, flush=True)
+
+    for year, period, report_code in tasks:
+        try:
+            rows = rows_by_task.get((year, period, report_code), [])
+            if not rows:
+                print(f"INFO: no statement rows for {year} {period}", flush=True)
+                continue
+            v = extract_values(rows)
+            record = {"company": "SK hynix", "corp_code": CORP_CODE,
+                      "fiscal_year": year, "period": period,
+                      "report_code": report_code, "statement_scope": "CFS"}
+            record.update(v)
+            if record.get("gross_profit") is None and record.get("revenue") is not None and record.get("cost_of_sales") is not None:
+                record["gross_profit"] = record["revenue"] - record["cost_of_sales"]
+            record["revenue_growth_pct"] = None
+            record["gross_margin_pct"] = ratio(record.get("gross_profit"), record.get("revenue"), 100)
+            record["operating_margin_pct"] = ratio(record.get("operating_profit"), record.get("revenue"), 100)
+            record["net_margin_pct"] = ratio(record.get("net_income"), record.get("revenue"), 100)
+            record["current_ratio_pct"] = ratio(record.get("current_assets"), record.get("current_liabilities"), 100)
+            record["debt_to_equity_pct"] = ratio(record.get("total_liabilities"), record.get("total_equity"), 100)
+            record["equity_ratio_pct"] = ratio(record.get("total_equity"), record.get("total_assets"), 100)
+            record["debt_to_assets_pct"] = ratio(record.get("total_liabilities"), record.get("total_assets"), 100)
+            record["interest_coverage"] = ratio(record.get("operating_profit"), record.get("interest_expense"))
+            record["total_asset_turnover"] = ratio(record.get("revenue"), record.get("total_assets"))
+            record["cfo_to_net_income"] = ratio(record.get("operating_cash_flow"), record.get("net_income"))
+            record["fcf_proxy"] = None
+            # These metrics remain blank where the standardized endpoint lacks needed inputs.
+            record["roa_pct"] = None
+            record["roe_pct"] = None
+            record["ebitda_margin_pct"] = None
+            record["net_debt_to_ebitda"] = None
+            record["dso_days"] = None
+            record["dio_days"] = None
+            record["dpo_days"] = None
+            record["ccc_days"] = None
+            record["source"] = "OpenDART fnlttSinglAcntAll.json"
+            records.append(record)
+            print(f"OK: {year} {period}", flush=True)
+        except Exception as exc:
+            print(f"WARN: {year} {period}: {exc}", file=sys.stderr, flush=True)
+
     if not records:
         raise RuntimeError("No statements collected. Check DART_API_KEY, network, and API availability.")
+
     df = pd.DataFrame(records)
     df = df.sort_values(["fiscal_year", "period"])
-    # Growth compares same period's revenue, and only when both values are available.
+    # Growth compares the same filing period year over year.
     for idx, row in df.iterrows():
         prior = df[(df["fiscal_year"] == row["fiscal_year"] - 1) &
                    (df["period"] == row["period"])]
@@ -162,9 +182,8 @@ def collect(start_year, end_year, api_key):
             new = row.get("revenue")
             if pd.notna(old) and old != 0 and pd.notna(new):
                 df.loc[idx, "revenue_growth_pct"] = (new / old - 1) * 100
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    # Merge prior normalized data so temporarily unavailable older filings are not deleted.
-    # Older template CSVs may use raw OpenDART columns and are not compatible with this schema.
+
+    # Merge prior normalized data; discard an incompatible legacy/raw CSV schema.
     if OUT.exists():
         try:
             old = pd.read_csv(OUT)
@@ -174,12 +193,13 @@ def collect(start_year, end_year, api_key):
                 df = df.drop_duplicates(["fiscal_year", "period"], keep="last")
                 df = df.sort_values(["fiscal_year", "period"])
             else:
-                print("INFO: existing CSV uses a legacy/empty schema; replacing it with normalized records.")
+                print("INFO: existing CSV uses a legacy/empty schema; replacing it with normalized records.", flush=True)
         except Exception as exc:
-            print(f"WARN: could not merge existing CSV ({exc}); replacing it with fresh normalized records.")
+            print(f"WARN: could not merge existing CSV ({exc}); replacing it with fresh normalized records.", flush=True)
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, index=False, encoding="utf-8-sig")
-    print(f"Wrote {len(df)} normalized rows to {OUT}")
+    print(f"Wrote {len(df)} normalized rows to {OUT}", flush=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
