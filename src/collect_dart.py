@@ -15,7 +15,7 @@ CORP_CODE = "00164779"  # SK hynix
 REPORTS = [("annual", "11011"), ("half_year", "11012"),
            ("quarterly_q1", "11013"), ("quarterly_q3", "11014")]
 OUT = Path("data/financials.csv")
-TIMEOUT = 45
+TIMEOUT = (10, 25)  # connect timeout, read timeout
 
 # DART account names can vary by filing; first matching account name is used.
 ACCOUNT_ALIASES = {
