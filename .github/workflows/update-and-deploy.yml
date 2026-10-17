@@ -90,6 +90,9 @@ jobs:
             echo "No financial-data changes."
           else
             git commit -m "chore: update SK hynix DART financial data"
+            # Rebase onto the latest branch tip in case another commit landed during collection.
+            git fetch origin "${{ github.ref_name }}"
+            git rebase "origin/${{ github.ref_name }}"
             git push origin HEAD:${{ github.ref_name }}
           fi
 
