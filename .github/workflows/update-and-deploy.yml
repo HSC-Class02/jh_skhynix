@@ -1,0 +1,110 @@
+name: Update and Deploy SK hynix Dashboard
+
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '17 0 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: sk-hynix-dashboard
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check whether a backfill is needed
+        id: data-check
+        shell: bash
+        run: |
+          needed=$(python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          path = Path("data/financials.csv")
+          required = {"fiscal_year", "period", "revenue", "operating_profit"}
+          if not path.exists():
+              print("true")
+          else:
+              try:
+                  with path.open("r", encoding="utf-8-sig", newline="") as f:
+                      reader = csv.DictReader(f)
+                      headers = set(reader.fieldnames or [])
+                      first_row = next(reader, None)
+                  print("true" if not required.issubset(headers) or first_row is None else "false")
+              except Exception:
+                  print("true")
+          PY
+          )
+          echo "needed=$needed" >> "$GITHUB_OUTPUT"
+          echo "Backfill required: $needed"
+
+      - name: Set up Python
+        if: github.event_name != 'push' || steps.data-check.outputs.needed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        if: github.event_name != 'push' || steps.data-check.outputs.needed == 'true'
+        run: python -m pip install -r requirements.txt
+
+      - name: Collect OpenDART financial data
+        if: github.event_name != 'push' || steps.data-check.outputs.needed == 'true'
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        shell: bash
+        run: |
+          if [ -z "$DART_API_KEY" ]; then
+            echo "::warning::Repository secret DART_API_KEY is missing. The site will deploy, but financial data cannot be collected until this secret is added."
+            exit 0
+          fi
+          python src/collect_dart.py --start-year 2010
+
+      - name: Commit updated financial data
+        if: github.event_name != 'push' || steps.data-check.outputs.needed == 'true'
+        shell: bash
+        run: |
+          if [ ! -s data/financials.csv ]; then
+            echo "No financial data file was generated."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/financials.csv
+          if git diff --cached --quiet; then
+            echo "No financial-data changes."
+          else
+            git commit -m "chore: update SK hynix DART financial data"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard and data
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Report deployment URL
+        if: success()
+        run: echo "Dashboard deployed to ${{ steps.deployment.outputs.page_url }}"
