@@ -34,7 +34,7 @@ python src/collect_dart.py --start-year 2010
 The collector writes `data/financials.csv`. Do not place the API key in source code or commit it.
 
 ## 3. GitHub Actions and monthly update
-The tracked workflow runs on the first day of every month at 00:17 UTC (09:17 Korea time). It can also be started manually from **Actions → Update and Deploy SK hynix Dashboard → Run workflow**. If the CSV is missing, empty, or uses the legacy raw OpenDART schema, the next push triggers an initial data backfill. Scheduled and manual runs recollect reports from 2010 onward and deploy the dashboard in the same run.
+The tracked workflow runs on the first day of every month at 00:17 UTC (09:17 Korea time). It can also be started manually from **Actions → Update and Deploy SK hynix Dashboard → Run workflow**. If the CSV is missing, empty, or uses the legacy raw OpenDART schema, the next push triggers an initial data backfill. Scheduled and manual runs request reports from 2010 onward and deploy the dashboard in the same run. The standardized OpenDART statement endpoint returned SK hynix records from 2015 onward in the current backfill; 2010–2014 remain unavailable through this endpoint and are not fabricated.
 
 The workflow publishes the repository root with GitHub Pages. In **Settings → Pages**, set **Build and deployment → Source: GitHub Actions**. The expected URL is:
 https://hsc-class02.github.io/jh_skhynix/
