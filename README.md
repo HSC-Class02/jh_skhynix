@@ -9,9 +9,9 @@ SK hynix OpenDART financial-data collection and analysis project. It collects an
 - Normalized CSV output (`data/financials.csv`)
 - Dashboard with summary figures, trend charts, and annual / half-year / quarterly tables (`index.html`)
 - Korean semiconductor/technology peer-firm reference table
-- Workflow generator (`setup_workflow.py`) to create GitHub Actions workflows after extraction
+- Automated collection and GitHub Pages deployment workflow (`.github/workflows/update-and-deploy.yml`)
 
-> ZIP delivery intentionally contains no dotfiles. Run `python setup_workflow.py` to generate `.github/workflows/update.yml` and `.github/workflows/pages.yml`.
+> The GitHub Actions workflow is tracked in this repository. It backfills data when the CSV is missing or incompatible, supports manual runs, and deploys the dashboard after collection.
 
 ## 1. Install and configure
 1. Extract this ZIP into the root of `HSC-Class02/jh_skhynix`.
@@ -21,8 +21,8 @@ SK hynix OpenDART financial-data collection and analysis project. It collects an
 5. In GitHub repository: **Settings → Secrets and variables → Actions → New repository secret**.
    - Name: `DART_API_KEY`
    - Secret: your OpenDART API key
-6. Run `python setup_workflow.py`.
-7. Commit and push all files, including the generated `.github` directory.
+6. In **Settings → Pages**, choose **GitHub Actions** as the build and deployment source if it is not already selected.
+7. Push the files to `main`. The tracked workflow will run automatically.
 
 ## 2. Run a local collection
 ```bash
@@ -34,9 +34,9 @@ python src/collect_dart.py --start-year 2010
 The collector writes `data/financials.csv`. Do not place the API key in source code or commit it.
 
 ## 3. GitHub Actions and monthly update
-The generated update workflow runs on the first day of every month at 00:17 UTC (09:17 Korea time) and can also be started manually from **Actions → Update DART Financial Data → Run workflow**. It fetches reports from 2010 onward on each run and updates the CSV if values changed.
+The tracked workflow runs on the first day of every month at 00:17 UTC (09:17 Korea time). It can also be started manually from **Actions → Update and Deploy SK hynix Dashboard → Run workflow**. If the CSV is missing, empty, or uses the legacy raw OpenDART schema, the next push triggers an initial data backfill. Scheduled and manual runs recollect reports from 2010 onward and deploy the dashboard in the same run.
 
-The Pages workflow publishes the repository root with GitHub Pages. In **Settings → Pages**, set **Build and deployment → Source: GitHub Actions**. The expected URL is:
+The workflow publishes the repository root with GitHub Pages. In **Settings → Pages**, set **Build and deployment → Source: GitHub Actions**. The expected URL is:
 https://hsc-class02.github.io/jh_skhynix/
 
 GitHub Pages deployment and the repository About link cannot be changed from this ZIP alone; after pushing, verify the URL, then set the repository **About → Website** field to the dashboard URL. The README badge already points to that expected URL.
