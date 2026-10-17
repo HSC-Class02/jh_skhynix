@@ -23,7 +23,7 @@ footer{margin-top:28px;color:var(--muted);font-size:11px;border-top:1px solid va
 </style>
 </head>
 <body>
-<header><div class="eyebrow">Financial intelligence · OpenDART</div><h1>SK hynix Financial Dashboard</h1><div class="sub">2010–현재 · 공시 기반 재무 성과와 재무건전성 모니터링</div><div class="meta"><span class="pill">Source: OpenDART</span><span class="pill">Annual · Half-year · Quarterly</span><span class="pill" id="updated">데이터 확인 중</span></div></header>
+<header><div class="eyebrow">Financial intelligence · OpenDART</div><h1>SK hynix Financial Dashboard</h1><div class="sub">2015–현재 · 공시 기반 재무 성과와 재무건전성 모니터링</div><div class="meta"><span class="pill">Source: OpenDART</span><span class="pill">Annual · Half-year · Quarterly</span><span class="pill" id="updated">데이터 확인 중</span></div></header>
 <main class="wrap">
 <div class="kpis">
 <div class="card kpi"><div class="label">최근 매출액</div><div class="value" id="kRevenue">—</div><div class="note" id="kPeriod">최근 공시 기준</div></div>
@@ -46,7 +46,7 @@ footer{margin-top:28px;color:var(--muted);font-size:11px;border-top:1px solid va
 <div class="card peer"><strong>DB하이텍</strong><span>파운드리</span></div>
 <div class="card peer"><strong>이오테크닉스</strong><span>레이저 응용 장비</span></div>
 </div>
-<footer>자동 수집은 GitHub Actions 설정 이후 매월 1일 실행됩니다. 재무비율은 공개된 계정과목이 존재할 때만 계산됩니다. 분기/반기 손익 및 현금흐름은 누적값일 수 있으므로 기간 간 비교 시 주의하세요. 투자 판단 전 DART 원문 공시와 회계정책을 확인하세요.</footer>
+<footer>자동 수집은 GitHub Actions를 통해 매월 1일 실행됩니다. 현재 표준 OpenDART 재무제표 API에서 확인된 데이터는 2015년 이후입니다. 2010–2014년 자료는 이 API 응답에 포함되지 않아 별도 원문 공시 파싱이 필요합니다. 재무비율은 공개된 계정과목이 존재할 때만 계산됩니다. 분기/반기 손익 및 현금흐름은 누적값일 수 있으므로 기간 간 비교 시 주의하세요. 투자 판단 전 DART 원문 공시와 회계정책을 확인하세요.</footer>
 </main>
 <script>
 const labels={
